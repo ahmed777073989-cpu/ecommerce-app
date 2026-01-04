@@ -5,6 +5,8 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { AccessCodesModule } from './access-codes/access-codes.module';
+import { ProductsModule } from './products/products.module';
+import { CategoriesModule } from './categories/categories.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
@@ -23,6 +25,8 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     DatabaseModule,
     AuthModule,
     AccessCodesModule,
+    ProductsModule,
+    CategoriesModule,
   ],
   providers: [
     {

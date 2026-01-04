@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { adminApi } from '../api/auth';
+import { productsApi } from '../api/products';
 import { FiCode, FiUsers, FiPackage, FiBarChart, FiFileText } from 'react-icons/fi';
 
 export default function DashboardPage() {
@@ -9,6 +10,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('access-codes');
   const [codes, setCodes] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     role: 'user',
@@ -21,6 +23,8 @@ export default function DashboardPage() {
   useEffect(() => {
     if (activeTab === 'access-codes') {
       loadCodes();
+    } else if (activeTab === 'products') {
+      loadProducts();
     }
   }, [activeTab]);
 
@@ -30,6 +34,15 @@ export default function DashboardPage() {
       setCodes(response.data);
     } catch (error) {
       console.error('Error loading codes:', error);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const data = await productsApi.getAllProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error loading products:', error);
     }
   };
 
@@ -307,8 +320,99 @@ export default function DashboardPage() {
 
               {activeTab === 'products' && (
                 <div>
-                  <h2 className="text-2xl font-bold mb-6">Products</h2>
-                  <p className="text-gray-600">Product management coming in Phase 1.5</p>
+                  <h2 className="text-2xl font-bold mb-6">Products Overview</h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-600 font-medium">Total Products</p>
+                      <p className="text-3xl font-bold text-blue-900">{products.length}</p>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <p className="text-sm text-green-600 font-medium">Available</p>
+                      <p className="text-3xl font-bold text-green-900">{products.filter(p => p.available).length}</p>
+                    </div>
+                    <div className="p-4 bg-orange-50 rounded-lg">
+                      <p className="text-sm text-orange-600 font-medium">Low Stock</p>
+                      <p className="text-3xl font-bold text-orange-900">{products.filter(p => p.stockCount > 0 && p.stockCount < 10).length}</p>
+                    </div>
+                    <div className="p-4 bg-red-50 rounded-lg">
+                      <p className="text-sm text-red-600 font-medium">Out of Stock</p>
+                      <p className="text-3xl font-bold text-red-900">{products.filter(p => p.stockCount === 0).length}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Low Stock Alerts</h3>
+                      {products.filter(p => p.stockCount > 0 && p.stockCount < 10).length === 0 ? (
+                        <p className="text-gray-500">No low stock items</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {products
+                            .filter(p => p.stockCount > 0 && p.stockCount < 10)
+                            .slice(0, 5)
+                            .map(product => (
+                              <div key={product.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                                <div>
+                                  <p className="font-medium">{product.title}</p>
+                                  <p className="text-sm text-gray-500">{product.stockCount} units left</p>
+                                </div>
+                                <button
+                                  onClick={() => navigate('/products')}
+                                  className="px-3 py-1 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700"
+                                >
+                                  Update Stock
+                                </button>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Recently Added</h3>
+                      {products.length === 0 ? (
+                        <p className="text-gray-500">No products yet</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {products
+                            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                            .slice(0, 5)
+                            .map(product => (
+                              <div key={product.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                                <img
+                                  src={product.images[0] || 'https://via.placeholder.com/60'}
+                                  alt=""
+                                  className="w-12 h-12 rounded object-cover"
+                                />
+                                <div className="flex-1">
+                                  <p className="font-medium">{product.title}</p>
+                                  <p className="text-sm text-gray-500">
+                                    {product.currency} {product.price}
+                                  </p>
+                                </div>
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                  product.available
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {product.available ? 'Available' : 'Unavailable'}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={() => navigate('/products')}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Manage Products
+                    </button>
+                  </div>
                 </div>
               )}
 

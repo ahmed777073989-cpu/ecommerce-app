@@ -34,7 +34,7 @@ A comprehensive bilingual (Arabic/English) mobile-first e-commerce application w
 
 ---
 
-## ✨ Features (Phase 1)
+## ✨ Features (Phase 1.5)
 
 ### Authentication & Authorization
 - ✅ User registration with phone number
@@ -44,19 +44,45 @@ A comprehensive bilingual (Arabic/English) mobile-first e-commerce application w
 - ✅ Secure password hashing with bcrypt
 - ✅ Rate limiting on auth endpoints
 
-### Admin Features
+### Product Management
+- ✅ Product catalog with categories (bilingual: English/Arabic)
+- ✅ Product CRUD operations (Create, Read, Update, Delete)
+- ✅ Product search, filter, and sorting
+- ✅ Product tags (new, coming_soon, order_to_buy)
+- ✅ Stock management and availability toggling
+- ✅ Product views and likes tracking
+- ✅ Product comments and ratings
+- ✅ Soft delete support for products
+- ✅ 13 sample products seeded
+
+### Admin Dashboard
 - ✅ Web-based admin dashboard
+- ✅ Products management page with full CRUD
+- ✅ Product list with filters and search
+- ✅ Add/Edit product modal with validation
+- ✅ Low stock alerts widget
+- ✅ Recent products widget
+- ✅ Category management
 - ✅ Generate single or bulk access codes
-- ✅ Configure code validity, role, and usage limits
 - ✅ View all access codes with usage statistics
 - ✅ Audit logging for admin actions
 
 ### Mobile App
+- ✅ Complete product browsing screens
+- ✅ Home screen with tabs (Browse, Search, Profile)
+- ✅ Category and tag filtering
+- ✅ Product search functionality
+- ✅ Product detail screen with full information
+- ✅ Image gallery for products
+- ✅ Like/unlike products
+- ✅ Add comments with ratings
+- ✅ Pull-to-refresh functionality
+- ✅ RTL layout support for Arabic
+- ✅ Language toggle (English/Arabic)
+- ✅ Admin panel access for admin users
 - ✅ Splash screen with auto-login
 - ✅ Login and signup flows
 - ✅ Account activation screen
-- ✅ Home screen skeleton
-- ✅ RTL layout support for Arabic
 - ✅ Persistent auth state
 
 ---

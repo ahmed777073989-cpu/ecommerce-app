@@ -14,9 +14,11 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
+  token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  
+  language: 'en' | 'ar';
+
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   setUser: (user: User) => void;
   logout: () => Promise<void>;
@@ -24,19 +26,23 @@ interface AuthState {
   login: (phone: string, password: string) => Promise<any>;
   signup: (name: string, phone: string, password: string, confirmPassword: string) => Promise<any>;
   activate: (accessCode: string) => Promise<any>;
+  setLanguage: (language: 'en' | 'ar') => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: null,
   refreshToken: null,
+  token: null,
   isLoading: false,
   isAuthenticated: false,
+  language: 'en',
 
   setTokens: async (accessToken: string, refreshToken: string) => {
     await AsyncStorage.setItem('accessToken', accessToken);
     await AsyncStorage.setItem('refreshToken', refreshToken);
-    set({ accessToken, refreshToken });
+    globalThis.__token__ = accessToken;
+    set({ accessToken, refreshToken, token: accessToken });
   },
 
   setUser: (user: User) => {
@@ -114,15 +120,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authApi.activate(phone, password, accessCode);
       const user = response.data;
-      
+
       await AsyncStorage.setItem('user', JSON.stringify(user));
       get().setUser(user);
-      
+
       set({ isLoading: false });
       return response;
     } catch (error: any) {
       set({ isLoading: false });
       throw error;
     }
+  },
+
+  setLanguage: async (language: 'en' | 'ar') => {
+    await AsyncStorage.setItem('language', language);
+    set({ language });
   },
 }));
