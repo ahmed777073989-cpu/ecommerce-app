@@ -110,6 +110,117 @@ Tracks admin actions for compliance and security.
 
 ---
 
+### products
+
+Stores product catalog information.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY | Unique product identifier |
+| title | VARCHAR(500) | NOT NULL | Product title |
+| short_description | TEXT | NULL | Brief description |
+| full_description | TEXT | NULL | Detailed description |
+| price | DECIMAL(10,2) | NOT NULL | Selling price |
+| cost | DECIMAL(10,2) | NULL | Cost price (admin only) |
+| currency | VARCHAR(3) | DEFAULT 'SAR' | Currency code |
+| category_id | UUID | NOT NULL | Category reference |
+| tags | TEXT[] | NULL | Product tags (new, coming_soon, order_to_buy) |
+| images | TEXT[] | NULL | Image URLs |
+| stock_count | INTEGER | DEFAULT 0 | Available stock quantity |
+| available | BOOLEAN | DEFAULT true | Product availability |
+| expiry_timer | TIMESTAMP | NULL | Product expiration date |
+| views_count | INTEGER | DEFAULT 0 | Total view count |
+| likes | INTEGER | DEFAULT 0 | Total like count |
+| dislikes | INTEGER | DEFAULT 0 | Total dislike count |
+| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
+| updated_at | TIMESTAMP | DEFAULT NOW() | Last update timestamp |
+| deleted_at | TIMESTAMP | NULL | Soft delete timestamp |
+
+**Indexes:**
+- PRIMARY KEY on `id`
+- INDEX on `category_id`
+- INDEX on `available`
+- INDEX on `deleted_at`
+- INDEX on `created_at`
+- INDEX on `views_count`
+- INDEX on `likes`
+
+**Foreign Keys:**
+- `category_id` REFERENCES `categories(id)` ON DELETE CASCADE
+
+---
+
+### categories
+
+Stores product categories with bilingual names.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY | Unique category identifier |
+| name_en | VARCHAR(255) | NOT NULL | English name |
+| name_ar | VARCHAR(255) | NOT NULL | Arabic name |
+| parent_id | UUID | NULL | Parent category for hierarchy |
+| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
+
+**Indexes:**
+- PRIMARY KEY on `id`
+- INDEX on `parent_id`
+
+**Foreign Keys:**
+- `parent_id` REFERENCES `categories(id)` ON DELETE CASCADE
+
+---
+
+### comments
+
+Stores user comments on products.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY | Unique comment identifier |
+| product_id | UUID | NOT NULL | Product reference |
+| user_id | UUID | NOT NULL | User who commented |
+| text | TEXT | NOT NULL | Comment content |
+| rating | INTEGER | DEFAULT 5 | Rating (1-5) |
+| flagged | BOOLEAN | DEFAULT false | Flagged by admin |
+| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
+| updated_at | TIMESTAMP | DEFAULT NOW() | Last update timestamp |
+
+**Indexes:**
+- PRIMARY KEY on `id`
+- INDEX on `product_id`
+- INDEX on `user_id`
+- INDEX on `flagged`
+
+**Foreign Keys:**
+- `product_id` REFERENCES `products(id)` ON DELETE CASCADE
+- `user_id` REFERENCES `users(id)` ON DELETE CASCADE
+
+---
+
+### product_likes
+
+Stores user likes on products.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY | Unique like identifier |
+| product_id | UUID | NOT NULL | Product reference |
+| user_id | UUID | NOT NULL | User who liked |
+| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
+
+**Indexes:**
+- PRIMARY KEY on `id`
+- UNIQUE INDEX on (`product_id`, `user_id`)
+- INDEX on `product_id`
+- INDEX on `user_id`
+
+**Foreign Keys:**
+- `product_id` REFERENCES `products(id)` ON DELETE CASCADE
+- `user_id` REFERENCES `users(id)` ON DELETE CASCADE
+
+---
+
 ## Relationships
 
 ```
@@ -121,6 +232,24 @@ users (1) ─── (N) sessions
 
 users (1) ─── (N) audit_logs
   └─ admin_id
+
+users (1) ─── (N) product_likes
+  └─ user_id
+
+users (1) ─── (N) comments
+  └─ user_id
+
+categories (1) ─── (N) categories
+  └─ parent_id
+
+categories (1) ─── (N) products
+  └─ category_id
+
+products (1) ─── (N) comments
+  └─ product_id
+
+products (1) ─── (N) product_likes
+  └─ product_id
 ```
 
 ---
@@ -149,6 +278,26 @@ Initial seeding creates:
    - 3 admin codes (365 days, 1 use)
    - 2 multi-use user codes (30 days, 5 uses)
 
+3. **5 Categories** (with bilingual names)
+   - Electronics / إلكترونيات
+   - Clothing / ملابس
+   - Home & Garden / المنزل والحديقة
+   - Sports & Outdoors / الرياضة والهواء الطلق
+   - Food & Beverages / الطعام والمشروبات
+
+4. **13 Sample Products**
+   - 3-4 tagged "new"
+   - 2-3 tagged "coming_soon"
+   - 2-3 tagged "order_to_buy"
+   - Various prices (50-5200 SAR)
+   - Mix of stock levels (in-stock, low-stock, out-of-stock)
+   - Multiple images per product
+
+5. **15 Sample Comments**
+   - 3-5 comments on first 5 products
+   - Ratings 4-5 stars
+   - From sample users
+
 ---
 
 ## Security Notes
@@ -161,12 +310,11 @@ Initial seeding creates:
 
 ---
 
-## Future Additions (Phase 1.5+)
+## Future Additions (Phase 2+)
 
-- `products` table: Product catalog
-- `categories` table: Product categories with translations
 - `orders` table: Order management
 - `payments` table: Payment transactions (Stripe)
-- `reviews` table: Product reviews
 - `wishlists` table: User wishlists
 - `cart_items` table: Shopping cart
+- `notifications` table: Push notifications
+- `messages` table: Chat messages
